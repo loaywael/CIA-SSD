@@ -553,13 +553,13 @@ class MultiGroupHead(nn.Module):
     def loss(self, example, preds_dicts, **kwargs):
         batch_anchors = example["anchors"]             # (batch_size, 70400, 7)
         batch_size_device = batch_anchors[0].shape[0]  # (batch_size,)
-
+        
         rets = []
         for task_id, preds_dict in enumerate(preds_dicts):  # task_id: 0
             # get predictions.
             box_preds = preds_dict["box_preds"]        # [batch_size, 200, 176, 14]，
             cls_preds = preds_dict["cls_preds"]        # [batch_size, 200, 176, 2]，
-
+            
             # get targets and weights.
             labels = example["labels"][task_id]            # cls_labels: [batch_size, 70400], elem in [-1, 0, 1].
             reg_targets = example["reg_targets"][task_id]  # reg_labels: [batch_size, 70400, 7].
@@ -578,14 +578,21 @@ class MultiGroupHead(nn.Module):
                 encoded_box_preds, encoded_reg_targets = add_sin_difference(box_preds, reg_targets)
 
             loc_loss = self.loss_reg(encoded_box_preds, encoded_reg_targets, weights=reg_weights)  # [N, 70400, 7], WeightedSmoothL1Loss, averaged in sample.
+            loc_loss = torch.abs(loc_loss)
             cls_loss = self.loss_cls(cls_preds, cls_targets, weights=cls_weights)  # [N, 70400, 1], SigmoidFocalLoss, averaged in sample.
+            cls_loss = torch.abs(cls_loss)
+            
             loc_loss_reduced = self.loss_reg._loss_weight * loc_loss.sum() / batch_size_device   # 2.0, averaged on batch_size
+            loc_loss_reduced = torch.abs(loc_loss_reduced)
             cls_loss_reduced = self.loss_cls._loss_weight * cls_loss.sum() / batch_size_device   # 1.0, average on batch_size
+            cls_loss_reduced = torch.abs(cls_loss_reduced)
             loss = loc_loss_reduced + cls_loss_reduced
 
             cls_pos_loss, cls_neg_loss = _get_pos_neg_loss(cls_loss, labels)  # for analysis, average on batch
             cls_pos_loss /= self.loss_norm["pos_cls_weight"]
+            cls_pos_loss = torch.abs(cls_pos_loss)
             cls_neg_loss /= self.loss_norm["neg_cls_weight"]
+            cls_neg_loss = torch.abs(cls_neg_loss)
 
             if self.use_direction_classifier:   # True
                 dir_targets = get_direction_target(example["anchors"][task_id], reg_targets, dir_offset=self.direction_offset,)  # [8, 70400, 2]

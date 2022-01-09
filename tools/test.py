@@ -84,7 +84,7 @@ def _accumulate_predictions_from_multiple_gpus(predictions_per_gpu):
 
     return predictions
 
-data_root = "/mnt/proj50/zhengwu"
+data_root = "/dataset/KITTI_DATASET_ROOT"
 
 def parse_args():
     parser = argparse.ArgumentParser(description="MegDet test detector")
@@ -169,8 +169,8 @@ def main():
                 for line in lines:
                     fout.write(line + "\n")
 
-        gt_labels_dir = data_root + "/KITTI/object/training/label_2"
-        label_split_file = data_root + "/KITTI/ImageSets/val.txt"
+        gt_labels_dir = data_root + "/training/label_2"
+        label_split_file = data_root + "/ImageSets/val.txt"
         # todo: this evaluation is different from previous one
         ap_result_str, ap_dict = kitti_evaluate(gt_labels_dir, res_dir, label_split_file=label_split_file, current_class=0,)
         print(ap_result_str)

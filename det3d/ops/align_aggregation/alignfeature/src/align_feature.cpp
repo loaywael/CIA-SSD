@@ -1,3 +1,4 @@
+#define AT_CHECK TORCH_CHECK
 #include <torch/extension.h>
 #include <ATen/ATen.h>
 

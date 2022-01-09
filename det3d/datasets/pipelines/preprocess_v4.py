@@ -285,7 +285,7 @@ class AssignTarget(object):
 
         # my addition
         self.target_class_names = [anchor_generator.class_name for anchor_generator in anchor_generators]
-        self.target_class_ids = [1]  # for car id
+        self.target_class_ids = [1, 2, 3] # [1] for car id
         self.enable_similar_type = assigner_cfg.get("enable_similar_type", False)
         if self.enable_similar_type:
             self.target_class_ids = [1, 2]  # for car id  # todo: addition of similar type
@@ -316,8 +316,12 @@ class AssignTarget(object):
                                      self.target_assigners]
 
     def __call__(self, res, info):
-        targets = {}
-
+        targets = {
+                "labels": [],
+                "reg_targets": [],
+                "reg_weights": [],
+                "positive_gt_id": [],
+        }
         # Calculate output feature map size for anchor generation.
         grid_size = res["lidar"]["voxels"]["shape"]  # [1408, 1600,  40]
 
@@ -333,15 +337,13 @@ class AssignTarget(object):
             gt_mask = np.zeros(gt_dict["gt_classes"].shape, dtype=np.bool)
             for target_class_id in self.target_class_ids:
                 gt_mask = np.logical_or(gt_mask, gt_dict["gt_classes"] == target_class_id)
-
+           
             gt_boxes = gt_dict["gt_boxes"][gt_mask]
-            gt_boxes[:, -1] = box_np_ops.limit_period(gt_boxes[:, -1], offset=0.5,
-                                                      period=np.pi * 2)  # limit ry to [-pi, pi]
-
-            gt_dict["gt_boxes"] = [gt_boxes]
-            gt_dict["gt_classes"] = [gt_dict["gt_classes"][gt_mask]]
-            gt_dict["gt_names"] = [gt_dict["gt_names"][gt_mask]]
-
+            gt_boxes[:, -1] = box_np_ops.limit_period(gt_boxes[:, -1], offset=0.5, period=np.pi * 2)  # limit ry to [-pi, pi]
+            gt_dict["gt_boxes"] = gt_boxes
+            gt_dict["gt_classes"] = gt_dict["gt_classes"][gt_mask]
+            gt_dict["gt_names"] = gt_dict["gt_names"][gt_mask]
+            
             res["lidar"]["annotations"] = gt_dict
 
         # get anchor classification labels and localization regression labels
@@ -350,19 +352,18 @@ class AssignTarget(object):
             for idx, target_assigner in enumerate(self.target_assigners):
                 targets_dict = target_assigner.assign_v2(
                     self.anchor_dicts_by_task[idx],
-                    gt_dict["gt_boxes"][idx],  # (x, y, z, w, l, h, r)
+                    gt_dict["gt_boxes"],  # (x, y, z, w, l, h, r)
                     anchors_mask=None,
-                    gt_classes=gt_dict["gt_classes"][idx],
-                    gt_names=gt_dict["gt_names"][idx],
+                    gt_classes=gt_dict["gt_classes"],
+                    gt_names=gt_dict["gt_names"],
                     enable_similar_type=self.enable_similar_type,
                 )
-
-            targets.update({
-                "labels": [targets_dict["labels"]],
-                "reg_targets": [targets_dict["bbox_targets"]],
-                "reg_weights": [targets_dict["bbox_outside_weights"]],
-                "positive_gt_id": [targets_dict["positive_gt_id"]],
-            })
-
+                targets["labels"].append(targets_dict["labels"])
+                targets["reg_targets"].append(targets_dict["bbox_targets"])
+                targets["reg_weights"].append(targets_dict["bbox_outside_weights"])
+                targets["positive_gt_id"].append(targets_dict["positive_gt_id"])
+                # target_dict_keys = ['labels', 'bbox_targets', 'bbox_outside_weights', 'positive_gt_id']
         res["lidar"]["targets"] = targets
         return res, info
+
+

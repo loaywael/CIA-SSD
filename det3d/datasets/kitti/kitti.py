@@ -160,7 +160,7 @@ class KittiDataset(PointCloudDataset):
         return results, dt_annos
 
     def __getitem__(self, idx):
-        return self.get_sensor_data(idx, with_gp=True)
+        return self.get_sensor_data(idx, with_gp=False)
 
     def get_sensor_data(self, idx, with_image=False, with_gp=False, by_index=False):
         # NOTICE: only for debug, eg. idx=000009, switch off in training/test.

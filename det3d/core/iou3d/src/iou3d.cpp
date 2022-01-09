@@ -1,3 +1,4 @@
+#define AT_CHECK TORCH_CHECK
 #include <torch/serialize/tensor.h>
 #include <torch/extension.h>
 #include <vector>

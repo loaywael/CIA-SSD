@@ -4,19 +4,37 @@ from pathlib import Path
 from det3d.builder import build_box_coder
 from det3d.utils.config_tool import get_downsample_factor
 
-data_root_prefix = "/mnt/proj50/zhengwu"
+data_root_prefix = "/dataset/KITTI_DATASET_ROOT"
 norm_cfg = None
 tasks = [dict(num_class=1, class_names=["Car"],),]
 class_names = list(itertools.chain(*[t["class_names"] for t in tasks]))
 box_coder = dict(type="ground_box3d_coder", n_dim=7, linear_dim=False, encode_angle_vector=False,)
 
 
-
+target_assigner = dict(
+    type="iou",
+    anchor_generators=[
+        dict(
+            type="anchor_generator_range",
+            sizes=[1.6, 3.9, 1.56],  # w, l, h
+            anchor_ranges=[0, -40.0, -1.0, 70.4, 40.0, -1.0],
+            rotations=[0, 1.57],
+            matched_threshold=0.6,
+            unmatched_threshold=0.45,
+            class_name="Car",
+        ),
+    ],
+    sample_positive_fraction=-1,
+    sample_size=512,
+    region_similarity_calculator=dict(type="nearest_iou_similarity",),
+    pos_area_threshold=-1,
+    tasks=tasks,
+)
 
 TAG = 'exp_test'
 
 my_paras = dict(
-    batch_size=4,
+    batch_size=2,
 
     # discarded
     enable_difficulty_level=False,
@@ -69,25 +87,7 @@ model = dict(
     ),
 )
 
-target_assigner = dict(
-    type="iou",
-    anchor_generators=[
-        dict(
-            type="anchor_generator_range",
-            sizes=[1.6, 3.9, 1.56],  # w, l, h
-            anchor_ranges=[0, -40.0, -1.0, 70.4, 40.0, -1.0],
-            rotations=[0, 1.57],
-            matched_threshold=0.6,
-            unmatched_threshold=0.45,
-            class_name="Car",
-        ),
-    ],
-    sample_positive_fraction=-1,
-    sample_size=512,
-    region_similarity_calculator=dict(type="nearest_iou_similarity",),
-    pos_area_threshold=-1,
-    tasks=tasks,
-)
+
 
 assigner = dict(
     box_coder=box_coder,
@@ -119,7 +119,7 @@ dataset_type = "KittiDataset"
 db_sampler = dict(
     type="GT-AUG",
     enable=True,
-    db_info_path=data_root_prefix + "/KITTI/object/dbinfos_train.pkl",
+    db_info_path=data_root_prefix + "/dbinfos_train.pkl",
     sample_groups=[dict(Car=15,),],
     db_prep_steps=[
         dict(filter_by_min_num_points=dict(Car=5,)),
@@ -188,10 +188,10 @@ test_pipeline = [
 ]
 
 
-data_root = data_root_prefix + "/KITTI/object"
-train_anno = data_root_prefix + "/KITTI/object/kitti_infos_train.pkl"
-val_anno = data_root_prefix + "/KITTI/object/kitti_infos_val.pkl"
-test_anno = data_root_prefix + "/KITTI/object/kitti_infos_test.pkl"
+data_root = data_root_prefix 
+train_anno = data_root_prefix + "/kitti_infos_train.pkl"
+val_anno = data_root_prefix + "/kitti_infos_val.pkl"
+test_anno = data_root_prefix + "/kitti_infos_test.pkl"
 
 data = dict(
     samples_per_gpu=my_paras['batch_size'],  # batch_size: 4
@@ -232,8 +232,8 @@ total_epochs = 60
 device_ids = range(8)
 dist_params = dict(backend="nccl", init_method="env://")
 log_level = "INFO"
-work_dir = "/mnt/proj50/zhengwu/saved_model/KITTI/proj52/megvii/second/" + TAG
-load_from = None
+work_dir = "/dataset/model_ws/" # + TAG
+load_from = work_dir + "/weights/latest.pth"
 resume_from = None
 workflow = [("train", 60), ("val", 1)]  # todo: only length of workflow has been used
 save_file = False if TAG == "debug" or TAG == "exp_debug" or Path(work_dir, "Det3D").is_dir() else True

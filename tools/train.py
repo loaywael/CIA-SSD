@@ -26,7 +26,8 @@ from det3d.torchie.apis import (
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a detector")
-    parser.add_argument("--config", default='../examples/second/configs/kitti_car_vfev3_spmiddlefhd_rpn1_mghead_syncbn.py', help="train config file path")
+    # parser.add_argument("--config", default='../examples/second/configs/kitti_car_vfev3_spmiddlefhd_rpn1_mghead_syncbn.py', help="train config file path")
+    parser.add_argument("--config", default='../examples/second/configs/kitti_all_vfev3_spmiddlefhd_rpn1_mghead_syncbn.py', help="train config file path")
     parser.add_argument("--work_dir", help="the dir to save logs and models")
     parser.add_argument("--resume_from", help="the checkpoint file to resume from")
     parser.add_argument("--validate", action="store_true", help="whether to evaluate the checkpoint during training",)
@@ -82,14 +83,14 @@ def main():
     logger.info("Distributed training: {}".format(distributed))
     logger.info(f"torch.backends.cudnn.benchmark: {torch.backends.cudnn.benchmark}")
 
-    if args.save_file and cfg.save_file:
-        # copy important files to backup
-        backup_dir = os.path.join(cfg.work_dir, "Det3D")
-        os.makedirs(backup_dir, exist_ok=True)
-        os.system("cp -r ../det3d %s/" % backup_dir)
-        os.system("cp -r ../examples %s/" % backup_dir)
-        os.system("cp -r ../tools %s/" % backup_dir)
-        logger.info(f"Backup source files to {cfg.work_dir}/Det3D")
+    # if args.save_file and cfg.save_file:
+    #     # copy important files to backup
+    #     backup_dir = os.path.join(cfg.work_dir, "Det3D")
+    #     os.makedirs(backup_dir, exist_ok=True)
+    #     os.system("cp -r ../det3d %s/" % backup_dir)
+    #     os.system("cp -r ../examples %s/" % backup_dir)
+    #     os.system("cp -r ../tools %s/" % backup_dir)
+    #     logger.info(f"Backup source files to {cfg.work_dir}/Det3D")
 
     # set random seeds
     if args.seed is not None:

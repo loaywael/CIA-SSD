@@ -1,9 +1,10 @@
 import os.path as osp
 
 import torch
-
+import numpy as np
 from ...utils import master_only
 from .base import LoggerHook
+import collections
 
 
 class TensorboardLoggerHook(LoggerHook):
@@ -34,11 +35,20 @@ class TensorboardLoggerHook(LoggerHook):
             if var in ["time", "data_time"]:
                 continue
             tag = "{}/{}".format(var, trainer.mode)
-            record = trainer.log_buffer.output[var]
+            record = np.array(trainer.log_buffer.output[var])
+            val = trainer.iter
             if isinstance(record, str):
                 self.writer.add_text(tag, record, trainer.iter)
+            elif isinstance(record, (np.ndarray, torch.Tensor)):
+                if record.size > 1:
+                    for rec in record:
+                        if rec.size > 1:
+                            for r in rec:
+                                self.writer.add_scalar(tag, r, val)
+                        else:
+                            self.writer.add_scalar(tag, rec, val)
             else:
-                self.writer.add_scalar(tag, trainer.log_buffer.output[var], trainer.iter)
+                self.writer.add_scalar(tag, record, val)
 
     @master_only
     def after_run(self, trainer):
