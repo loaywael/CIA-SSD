@@ -6,7 +6,42 @@ Single-stage object detector from point cloud on KITTI Benchmark, running with 3
 
 ## AP on KITTI Dataset
 
-Val Split (11 recall points):
+
+My Training results on [Car, Pedestrian, Cyclist] for 75 epochs
+```
+2022-01-09 07:46:40,337 - INFO - Evaluation official: car AP(Average Precision)@0.70, 0.70, 0.70:
+bbox AP:90.74, 89.04, 80.86
+bev  AP:90.48, 87.82, 80.11
+3d   AP:88.44, 77.22, 69.65
+aos  AP:90.65, 88.36, 80.11
+car AP(Average Precision)@0.70, 0.50, 0.50:
+bbox AP:90.74, 89.04, 80.86
+bev  AP:90.85, 89.92, 89.41
+3d   AP:90.84, 89.82, 89.19
+aos  AP:90.65, 88.36, 80.11
+pedestrian AP(Average Precision)@0.50, 0.50, 0.50:
+bbox AP:53.59, 45.82, 39.16
+bev  AP:54.56, 46.45, 44.55
+3d   AP:50.41, 42.67, 36.68
+aos  AP:42.71, 36.07, 30.81
+pedestrian AP(Average Precision)@0.50, 0.25, 0.25:
+bbox AP:53.59, 45.82, 39.16
+bev  AP:67.09, 57.90, 50.32
+3d   AP:67.09, 57.90, 50.32
+aos  AP:42.71, 36.07, 30.81
+cyclist AP(Average Precision)@0.50, 0.50, 0.50:
+bbox AP:86.85, 75.71, 73.78
+bev  AP:83.81, 69.78, 64.44
+3d   AP:82.20, 66.86, 62.40
+aos  AP:86.64, 74.02, 72.06
+cyclist AP(Average Precision)@0.50, 0.25, 0.25:
+bbox AP:86.85, 75.71, 73.78
+bev  AP:91.63, 71.56, 69.69
+3d   AP:91.63, 71.56, 69.69
+aos  AP:86.64, 74.02, 72.06
+```
+
+Val Split (11 recall points) using the author [pretrained-model](https://drive.google.com/file/d/1SElYNQCsr4gctqLxmB6Fc4t7Ed8SgBgs/view?usp=sharing) on cars only:
 ```
 Car  AP:98.85, 90.20, 89.58
 bev  AP:90.51, 88.86, 87.95
@@ -18,10 +53,9 @@ bev  AP:98.92, 90.29, 89.81
 3d   AP:99.00, 90.22, 89.70
 aos  AP:98.77, 89.99, 89.24
 ```
-
+trained on the train split (3712 samples)
 Test Split: [Submission link](http://www.cvlibs.net/datasets/kitti/eval_object_detail.php?&result=b4e17f75f5baa917c4f250e832aace71682c3a84)
 
-You may download the pre-trained model [here](https://drive.google.com/file/d/1SElYNQCsr4gctqLxmB6Fc4t7Ed8SgBgs/view?usp=sharing), which is trained on the train split (3712 samples).
 
 ## Pipeline
 
@@ -84,4 +118,5 @@ Our code are mainly based on [Det3D](https://github.com/poodarchu/det3d), thanks
 
 
 ## Contact
-If you have any question or suggestion about this repo, please feel free to contact me (zheng-w10@foxmail.com)
+If you have any question regarding ros support, multi-target training, or 360-deg support feel free to contact me (hythamconn1@gmail.com)
+I highly recommend asking the main author(zheng-w10@foxmail.com) about new suguestions, model architecture or any other issue regarding the originalrepo 
