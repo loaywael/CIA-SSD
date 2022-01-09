@@ -7,7 +7,7 @@ Single-stage object detector from point cloud on KITTI Benchmark, running with 3
 ## AP on KITTI Dataset
 
 
-My Training results on [Car, Pedestrian, Cyclist] for 75 epochs
+My Training results on [Car, Pedestrian, Cyclist] with random weights for 75 epochs
 ```
 2022-01-09 07:46:40,337 - INFO - Evaluation official: car AP(Average Precision)@0.70, 0.70, 0.70:
 bbox AP:90.74, 89.04, 80.86
